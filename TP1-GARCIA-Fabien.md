@@ -439,3 +439,156 @@ sr1          11:1    1 1024M  0 rom
     /dev/cocodata/cocodata2     /mnt/part2                  ext4    defaults        0 0
     /dev/cocodata/cocodata3     /mnt/part3                  ext4    defaults        0 0
     ```
+
+## Gestion de services 
+
+### 1. Interaction avec un service existant
+
+ -  Assurez-vous que ...  
+ L'unité est démarrée  
+    ```
+    [coco1@node1 ~]$ sudo systemctl status firewalld
+    ● firewalld.service - firewalld - dynamic firewall daemon
+        Loaded: loaded (/usr/lib/systemd/system/firewalld.service; enabled; vendor preset: enabled)
+        Active: active (running) since Mon 2022-11-14 22:08:25 CET; 49s ago
+          Docs: man:firewalld(1)
+      Main PID: 800 (firewalld)
+          Tasks: 2 (limit: 5907)
+        Memory: 41.8M
+            CPU: 326ms
+        CGroup: /system.slice/firewalld.service
+                └─800 /usr/bin/python3 -s /usr/sbin/firewalld --nofork --nopid
+
+    Nov 14 22:08:25 node1.tp1.b2 systemd[1]: Starting firewalld - dynamic firewall daemon...
+    Nov 14 22:08:25 node1.tp1.b2 systemd[1]: Started firewalld - dynamic firewall daemon.
+    ```
+
+    L'unité est activé  
+    ```
+    [coco1@node1 ~]$ sudo systemctl is-enabled firewalld
+
+    enabled
+    ```
+### A. Unité simpliste 
+
+ - Création du fichier /etc/systemd/system/web.service  
+  ```
+  [coco1@node1 ~]$ cat /etc/systemd/system/web.service
+
+  [Unit]
+  Description=Very simple web service
+
+  [Service]
+  ExecStart=/usr/bin/python3 -m http.server 8888
+
+  [Install]
+  WantedBy=multi-user.target
+  ```
+  - Ouverture du port 8888 :  
+  ```
+  [coco1@node1 ~]$ sudo firewall-cmd --add-port=8888/tcp --permanent
+  success
+  ```
+ - Accès au serveur web :  
+ ```
+ fg331@LAPTOP-VI1KK0CA MINGW64 ~
+$ curl 10.101.1.11:8888
+
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   975  100   975    0     0   244k      0 --:--:-- --:--:-- --:--:--  317k<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Directory listing for /</title>
+</head>
+<body>
+<h1>Directory listing for /</h1>
+<hr>
+<ul>
+<li><a href="afs/">afs/</a></li>
+<li><a href="bin/">bin@</a></li>
+<li><a href="boot/">boot/</a></li>
+<li><a href="dev/">dev/</a></li>
+<li><a href="etc/">etc/</a></li>
+<li><a href="home/">home/</a></li>
+<li><a href="lib/">lib@</a></li>
+<li><a href="lib64/">lib64@</a></li>
+<li><a href="media/">media/</a></li>
+<li><a href="mnt/">mnt/</a></li>
+<li><a href="opt/">opt/</a></li>
+<li><a href="proc/">proc/</a></li>
+<li><a href="root/">root/</a></li>
+<li><a href="run/">run/</a></li>
+<li><a href="sbin/">sbin@</a></li>
+<li><a href="srv/">srv/</a></li>
+<li><a href="sys/">sys/</a></li>
+<li><a href="tmp/">tmp/</a></li>
+<li><a href="usr/">usr/</a></li>
+<li><a href="var/">var/</a></li>
+</ul>
+<hr>
+</body>
+</html>
+ ``` 
+
+### B. Modification de l'unité  
+
+ - Préparer l'environnement pour exécuter le mini serveur web python  
+ ```
+[coco1@node1 ~]$ sudo useradd web
+
+[coco1@node1 ~]$ sudo mkdir /var/www
+[coco1@node1 ~]$ sudo mkdir /var/www/meow/
+
+[coco1@node1 www]$ cd /var/www/
+[coco1@node1 www]$ sudo chown web meow
+[coco1@node1 www]$ sudo cd meow
+[coco1@node1 meow]$ sudo su web
+[web@node1 meow]$ touch test
+
+[web@node1 meow]$ ls -al
+total 0
+drwxr-xr-x. 2 web  root 18 Nov 15 00:12 .
+drwxr-xr-x. 3 root root 18 Nov 15 00:10 ..
+-rw-rw-r--. 1 web  web   0 Nov 15 00:12 test
+ ```
+
+- Modifier l'unité de service :  
+```
+[coco1@node1 meow]$ cat /etc/systemd/system/web.service
+
+[Unit]
+Description=Very simple web service
+
+[Service]
+ExecStart=/usr/bin/python3 -m http.server 8888
+User=web
+WorkingDirectory=/var/www/meow/
+
+[Install]
+WantedBy=multi-user.target
+```
+
+- Vérifier le bon fonctionnement  
+```
+fg331@LAPTOP-VI1KK0CA MINGW64 ~
+$ curl 10.101.1.11:8888
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+100   330  100   330    0     0   111k      0 --:--:-- --:--:-- --:--:--  161k<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Directory listing for /</title>
+</head>
+<body>
+<h1>Directory listing for /</h1>
+<hr>
+<ul>
+<li><a href="test">test</a></li>
+</ul>
+<hr>
+</body>
+</html>
+```
