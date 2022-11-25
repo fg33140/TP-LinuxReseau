@@ -1,0 +1,9 @@
+version: "3.3"
+
+
+services:
+  go:
+    image: my_go_serv
+    ports:
+      - "8888:8080"
+    restart: always
