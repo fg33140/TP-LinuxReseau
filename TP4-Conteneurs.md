@@ -123,3 +123,24 @@ services:
    docker build . -t my_go_serv
    docker-compose up -d
    ```
+  Pour accéder au site, il faut se connecter sur le port 8888 :  
+   ```
+   [user@docker1 app]$ curl localhost:8888
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link rel="stylesheet" href="/view/css/style_index.css">
+      <link rel="icon" href="/view/img/favicon.png">
+      <link rel="preconnect" href="https://fonts.googleapis.com/%22%3E">
+      <link rel="preconnect" href="https://fonts.gstatic.com/" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&display=swap" rel="stylesheet">
+      <script type="text/javascript" src="/view/js/script_index.js"></script>
+      <script type="text/javascript" src="/view/js/script_searchbar.js"></script>
+      <script src='https://kit.fontawesome.com/a076d05399.js' crossorigin='anonymous'></script>
+      <title>Groupie Tracker</title>
+  </head>
+  <body>
+   ```
