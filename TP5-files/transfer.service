@@ -1,0 +1,10 @@
+[Unit]
+Description=Transfer .tar files from NFS mount to RAID1 mount
+Wants=transfer.timer
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash ./root/transfer.sh
+
+[Install]
+WantedBy=multi-user.target

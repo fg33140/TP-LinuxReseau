@@ -1,0 +1,10 @@
+[Unit]
+Description=Timer for transfer.service (every minute)
+Requires=transfer.service
+
+[Timer]
+Unit=transfer.service
+OnCalendar=*-*-* *:*:00
+
+[Install]
+WantedBy=timers.target

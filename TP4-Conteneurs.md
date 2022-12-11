@@ -14,7 +14,7 @@ Complete!
 [user@docker1 ~]$ sudo systemctl start docker
 
 [user@docker1 ~]$ sudo usermod -aG docker user
-```
+``` 
 
 ### 3. Lancement de conteneurs
 
