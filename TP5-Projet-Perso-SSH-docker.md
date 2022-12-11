@@ -346,6 +346,18 @@ Ajout de la ligne suivant dans le fichier /etc/fstab pour sauvegarder le montage
 ### 3. Création d'un service avec timer
 Ici on va créer un service oneshot, exécuté toutes les minutes, pour transférer automatiquement les snapshots provenant du montage NFS, vers le point de montage RAID1.  
 
+- Le script [transfer.sh](./TP5-files/transfer.sh) :  
+```
+[root@serverNFS ~]# cat transfer.sh
+#!/bin/bash
+
+if [ $(find /mnt/snapshots -maxdepth 1 -name '*.tar' -type f -print | wc -l) -eq 0 ]; then
+        echo "test"
+        exit
+fi
+mv /mnt/snapshots/*.tar /mnt/backups/
+```
+
 - Création des fichiers .service et .timer dans /etc/systemd/system/ :  
 [transfer.service](./TP5-files/transfer.service) :  
 ```
